@@ -3,7 +3,9 @@ import { DashboardGrid } from './components/DashboardGrid';
 function App() {
   return (
     <main>
-      <DashboardGrid />
+
+      <DashboardGrid/>
+
     </main>
   );
 }
