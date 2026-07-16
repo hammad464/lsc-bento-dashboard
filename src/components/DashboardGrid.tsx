@@ -1,11 +1,21 @@
-import React from 'react';
+import WelcomeTile from './WelcomeTile';
+import ClockTile from './ClockTile';
+import QuickLinksTile from './QuickLinksTile';
+import WeatherTile from './WeatherTile';
+import TaskTile from './TaskTile';
+import QuoteTile from './QuoteTile';
 
-
-
-export const DashboardGrid: React.FC = () => {
+const DashboardGrid = () => {
   return (
-    <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
-
+    <div className="dashboard-grid">
+      <WelcomeTile name="Hammad" />
+      <ClockTile />
+      <QuickLinksTile />
+      <WeatherTile />
+      <TaskTile />
+      <QuoteTile />
     </div>
   );
 };
+
+export default DashboardGrid;

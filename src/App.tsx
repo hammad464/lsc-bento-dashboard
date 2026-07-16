@@ -1,13 +1,27 @@
-import { DashboardGrid } from './components/DashboardGrid';
+import { useEffect, useState } from 'react';
+import Navbar from './components/Navbar';
+import DashboardGrid from './components/DashboardGrid';
+import type { Theme } from './types';
+import './styles/dashboard.css';
 
 function App() {
-  return (
-    <main>
-<h1>My Dashboard</h1>
-<h2>Welcome to your dashboard!</h2>
-      <DashboardGrid/>
+  const [theme, setTheme] = useState<Theme>('light');
 
-    </main>
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
+
+  return (
+    <div className="app-shell" data-theme={theme}>
+      <Navbar theme={theme} onToggleTheme={toggleTheme} />
+      <main className="app-main">
+        <DashboardGrid />
+      </main>
+    </div>
   );
 }
 
