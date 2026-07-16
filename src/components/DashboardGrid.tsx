@@ -1,11 +1,15 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 
+interface DashboardGridProps {
+  children: ReactNode;
+}
 
-
-export const DashboardGrid: React.FC = () => {
+const DashboardGrid = ({ children }: DashboardGridProps) => {
   return (
-    <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
-
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-min max-w-6xl mx-auto w-full">
+      {children}
     </div>
   );
 };
+
+export default DashboardGrid;
