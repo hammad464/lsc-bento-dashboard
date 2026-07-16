@@ -1,4 +1,6 @@
-import { GitBranch, Search, MessageSquare, Code2, ArrowRight, Link2 } from 'lucide-react';
+import { ArrowRight, Link2 } from 'lucide-react';
+import { SiGithub, SiGoogle, SiBlack, SiStackoverflow } from 'react-icons/si';
+
 import LinkCard from './LinkCard';
 
 const QuickLinksTile = () => {
@@ -7,35 +9,35 @@ const QuickLinksTile = () => {
       name: 'GitHub',
       description: 'Code & Repos',
       url: 'https://github.com',
-      icon: <GitBranch size={22} />,
+      icon: <SiGithub size={22} />,
       color: 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
     },
     {
       name: 'Google',
       description: 'Search anything',
       url: 'https://google.com',
-      icon: <Search size={22} />,
+      icon: <SiGoogle size={22} />,
       color: 'bg-blue-500 dark:bg-[#B6F500] text-white dark:text-gray-900'
     },
     {
       name: 'Slack',
       description: 'Team Chat',
-      url: 'https://slack.com',
-      icon: <MessageSquare size={22} />,
+      url: 'https://app.slack.com/client/T0B7ELS8N6N/C0BH07T890R',
+      icon: <SiBlack size={22} />,
       color: 'bg-purple-600 text-white'
     },
     {
       name: 'Stack Overflow',
       description: 'Q&A Community',
       url: 'https://stackoverflow.com',
-      icon: <Code2 size={22} />,
+      icon: <SiStackoverflow size={22} />,
       color: 'bg-orange-500 text-white'
     }
   ];
 
   return (
     <div className="md:col-span-1 row-span-2 rounded-[2rem] bg-[#EEF7F2] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 flex flex-col shadow-sm hover:shadow-lg transition-all duration-300">
- <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-[#d1ebd9] dark:bg-gray-800 rounded-xl text-green-800 dark:text-green-400 shrink-0">
             <Link2 size={20} />
