@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CloudRain, Sun, Cloud, Snowflake } from 'lucide-react';
+import { CloudRain, Sun, Cloud, Snowflake, Droplets, Wind } from 'lucide-react';
 
 const WeatherTile = () => {
   const [isCelsius, setIsCelsius] = useState(true);
@@ -8,7 +8,9 @@ const WeatherTile = () => {
   const weatherData = {
     city: 'San Francisco',
     tempC: 18,
-    condition: 'Rainy'
+    condition: 'Rainy',
+    humidity: '64%',
+    wind: '12 km/h'
   };
 
   const tempF = Math.round((weatherData.tempC * 9) / 5 + 32);
@@ -17,46 +19,65 @@ const WeatherTile = () => {
 
   const getWeatherIcon = (condition: string) => {
     switch (condition.toLowerCase()) {
-      case 'sunny': return <Sun size={48} className="text-yellow-400" />;
-      case 'rainy': return <CloudRain size={48} className="text-blue-400" />;
-      case 'cloudy': return <Cloud size={48} className="text-gray-400" />;
-      case 'snowy': return <Snowflake size={48} className="text-blue-200" />;
-      default: return <Sun size={48} className="text-yellow-400" />;
+      case 'sunny': return <Sun size={48} className="text-amber-500 drop-shadow-md" />;
+      case 'rainy': return <CloudRain size={48} className="text-blue-500 dark:text-[#B6F500] drop-shadow-md" />;
+      case 'cloudy': return <Cloud size={48} className="text-gray-400 drop-shadow-md" />;
+      case 'snowy': return <Snowflake size={48} className="text-blue-300 dark:text-[#B6F500] drop-shadow-md" />;
+      default: return <Sun size={48} className="text-amber-500 drop-shadow-md" />;
     }
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-indigo-950 rounded-3xl shadow-sm border border-blue-100 dark:border-gray-700 col-span-1 row-span-1 flex flex-col justify-between h-full relative overflow-hidden">
-      <div className="flex justify-between items-start z-10">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-            {weatherData.city}
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">
-            {weatherData.condition}
-          </p>
-        </div>
-        <div className="bg-white/50 dark:bg-gray-800/50 p-3 rounded-2xl backdrop-blur-sm">
-          {getWeatherIcon(weatherData.condition)}
-        </div>
-      </div>
+    <div className="md:col-span-2 row-span-1 h-[160px] rounded-[2rem] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-center shadow-sm hover:shadow-lg transition-all duration-300 relative group overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent dark:from-[#B6F500]/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
-      <div className="flex items-end justify-between mt-6 z-10">
-        <div className="text-5xl font-bold text-gray-900 dark:text-white tracking-tighter">
-          {displayTemp}<span className="text-3xl text-gray-500 dark:text-gray-400 ml-1">{unit}</span>
+      <div className="relative z-10 flex flex-row items-center justify-between h-full">
+        <div className="flex flex-col items-start justify-between h-full">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight truncate">
+              {weatherData.city}
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 font-medium text-sm mt-1">
+              {weatherData.condition}
+            </p>
+          </div>
+          <button
+            onClick={() => setIsCelsius(!isCelsius)}
+            className="px-3 py-1.5 mt-auto bg-gray-100/80 dark:bg-gray-800/80 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 transition-all backdrop-blur-sm border border-gray-200 dark:border-gray-700"
+          >
+            {isCelsius ? '°F' : '°C'}
+          </button>
         </div>
         
-        <button
-          onClick={() => setIsCelsius(!isCelsius)}
-          className="px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm transition-colors border border-gray-100 dark:border-gray-600"
-        >
-          Switch to {isCelsius ? '°F' : '°C'}
-        </button>
-      </div>
+        <div className="flex items-center gap-4">
+          <div className="transform group-hover:scale-110 transition-transform duration-500">
+            {getWeatherIcon(weatherData.condition)}
+          </div>
+          <div className="flex items-start">
+            <span className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white tracking-tighter tabular-nums">
+              {displayTemp}
+            </span>
+            <span className="text-xl font-bold text-gray-400 dark:text-gray-500 mt-1 ml-1">
+              {unit}
+            </span>
+          </div>
+        </div>
 
-      {/* Decorative background shapes */}
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-400/10 dark:bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
-      <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-400/10 dark:bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="flex flex-col gap-4 border-l border-gray-100 dark:border-gray-800 pl-6 py-2">
+          <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
+            <div className="p-2 bg-blue-50 dark:bg-[#B6F500]/20 rounded-lg shrink-0">
+              <Droplets size={18} className="text-blue-500 dark:text-[#B6F500]" />
+            </div>
+            <span className="text-sm font-semibold">{weatherData.humidity} Humidity</span>
+          </div>
+          <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
+            <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg shrink-0">
+              <Wind size={18} className="text-gray-500" />
+            </div>
+            <span className="text-sm font-semibold">{weatherData.wind} Wind</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
