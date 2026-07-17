@@ -14,7 +14,7 @@ const WeatherTile = () => {
   const weatherData = {
     city: 'San Francisco',
     tempC: 18,
-    condition: 'Sunny', // Try changing this to see different Lucide icons
+    condition: 'Sunny', 
     humidity: '64%',
     wind: '12 km/h'
   };

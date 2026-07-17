@@ -6,25 +6,22 @@ const ThemeToggleTile = () => {
 
   // Load theme on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-
-    if (savedTheme === 'dark') {
-      document.body.classList.add('dark');
-      setIsDark(true);
-    } else {
-      document.body.classList.remove('dark');
-      setIsDark(false);
-    }
+    const isDark = document.documentElement.classList.contains('dark');
+    setIsDark(isDark);
   }, []);
 
   // Toggle theme
   const toggleTheme = () => {
-    const newTheme = document.body.classList.contains('dark')
-      ? 'light'
-      : 'dark';
+    const isCurrentlyDark = document.documentElement.classList.contains('dark');
+    const newTheme = isCurrentlyDark ? 'light' : 'dark';
 
-    document.body.classList.toggle('dark');
-    localStorage.setItem('theme', newTheme); // ⭐ persist
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    localStorage.setItem('theme', newTheme); 
     setIsDark(newTheme === 'dark');
   };
 

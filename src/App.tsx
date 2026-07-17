@@ -9,7 +9,7 @@ import SystemStatsTile from './components/SystemStatsTile';
 
 function App() {
   return (
-    <div className="min-h-screen transition-colors duration-500 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
+    <div className="bg-[#f8fafc] dark:bg-[#0b0f19] min-h-screen transition-colors duration-500 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
       {/* Background gradients for modern feel */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-300/20 dark:bg-indigo-900/20 blur-[120px]" />
