@@ -104,16 +104,16 @@ const WeatherTile = () => {
             </div>
           </div>
           
-          <div className={`flex bg-white/30 dark:bg-black/20 backdrop-blur-md rounded-full p-1 border ${isDay ? 'border-white/50' : 'border-white/10'}`}>
+          <div className="flex bg-white/80 dark:bg-black/20 backdrop-blur-md rounded-full p-1 border border-white/50 dark:border-white/10">
             <button
               onClick={() => setIsCelsius(true)}
-              className={`px-4 py-1 text-xs font-bold rounded-full transition-all ${isCelsius ? (isDay ? 'bg-blue-500 text-white shadow-sm' : 'bg-[#B6F500] text-gray-900 shadow-sm') : (isDay ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-white')}`}
+              className={`px-4 py-1 text-xs font-bold rounded-full transition-all ${isCelsius ? 'bg-blue-500 dark:bg-[#B6F500] text-white dark:text-gray-900 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
             >
               °C
             </button>
             <button
               onClick={() => setIsCelsius(false)}
-              className={`px-4 py-1 text-xs font-bold rounded-full transition-all ${!isCelsius ? (isDay ? 'bg-blue-500 text-white shadow-sm' : 'bg-[#B6F500] text-gray-900 shadow-sm') : (isDay ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-white')}`}
+              className={`px-4 py-1 text-xs font-bold rounded-full transition-all ${!isCelsius ? 'bg-blue-500 dark:bg-[#B6F500] text-white dark:text-gray-900 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
             >
               °F
             </button>
