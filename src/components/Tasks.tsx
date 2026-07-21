@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Trash2, CheckCircle2, Circle, ArrowRight, X, Search, Clock } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, Circle, X, Search, Clock } from 'lucide-react';
 
 interface Note {
   id: string;
@@ -67,9 +67,9 @@ const NotesQuickAddTile = () => {
   const deleteNote = (id: string) => {
     setNotes(notes.filter((note) => note.id !== id));
   };
-  
+
   const toggleComplete = (id: string) => {
-    setNotes(notes.map(note => 
+    setNotes(notes.map(note =>
       note.id === id ? { ...note, completed: !note.completed } : note
     ));
   };
@@ -132,9 +132,9 @@ const NotesQuickAddTile = () => {
             {notes.filter(n => !n.completed).length} pending
           </span>
         </div>
-        
+
         {/* Clickable "View all" button, styled like the Celsius slider */}
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="px-4 py-1 text-xs font-bold rounded-full bg-blue-500 dark:bg-[#B6F500] text-white dark:text-gray-900 shadow-sm hover:bg-blue-600 dark:hover:bg-[#88d400] transition-all cursor-pointer shrink-0 ml-auto"
         >
@@ -173,13 +173,12 @@ const NotesQuickAddTile = () => {
           notes.map((note) => (
             <div
               key={note.id}
-              className={`flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all duration-300 group ${
-                note.completed 
-                  ? 'bg-gray-50/50 dark:bg-gray-800/30 border-transparent' 
+              className={`flex items-center justify-between gap-3 p-3 rounded-2xl border transition-all duration-300 group ${note.completed
+                  ? 'bg-gray-50/50 dark:bg-gray-800/30 border-transparent'
                   : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md'
-              }`}
+                }`}
             >
-              <button 
+              <button
                 onClick={() => toggleComplete(note.id)}
                 className="flex-shrink-0 focus:outline-none"
               >
@@ -189,13 +188,12 @@ const NotesQuickAddTile = () => {
                   <Circle size={24} className="text-gray-300 dark:text-gray-600 group-hover:text-blue-400 dark:group-hover:text-[#B6F500] transition-colors" />
                 )}
               </button>
-              
+
               <div className="flex-1 flex flex-col min-w-0">
-                <p className={`text-base break-words transition-all duration-300 ${
-                  note.completed 
-                    ? 'text-gray-400 dark:text-gray-500 line-through' 
+                <p className={`text-base break-words transition-all duration-300 ${note.completed
+                    ? 'text-gray-400 dark:text-gray-500 line-through'
                     : 'text-gray-700 dark:text-gray-200 font-medium'
-                }`}>
+                  }`}>
                   {note.content}
                 </p>
                 {note.time && (
@@ -205,7 +203,7 @@ const NotesQuickAddTile = () => {
                   </div>
                 )}
               </div>
-              
+
               <button
                 onClick={() => deleteNote(note.id)}
                 className="p-2 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
@@ -225,11 +223,11 @@ const NotesQuickAddTile = () => {
 
       {/* Modal/Pop-up displaying all tasks */}
       {isModalOpen && createPortal(
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setIsModalOpen(false)}
         >
-          <div 
+          <div
             className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-h-[85vh] overflow-hidden animate-scale-up"
             onClick={(e) => e.stopPropagation()}
           >
@@ -310,11 +308,10 @@ const NotesQuickAddTile = () => {
                     <button
                       key={filterType}
                       onClick={() => setFilter(filterType)}
-                      className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-bold rounded-xl capitalize transition-all ${
-                        filter === filterType
+                      className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-bold rounded-xl capitalize transition-all ${filter === filterType
                           ? 'bg-blue-500 text-white dark:bg-[#B6F500] dark:text-gray-900 shadow-md shadow-blue-500/10 dark:shadow-[#B6F500]/10'
                           : 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700/80 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
-                      }`}
+                        }`}
                     >
                       {filterType}
                     </button>
@@ -329,13 +326,12 @@ const NotesQuickAddTile = () => {
                 filteredNotes.map((note) => (
                   <div
                     key={note.id}
-                    className={`flex items-center justify-between gap-3 p-4 rounded-2xl border transition-all duration-300 group ${
-                      note.completed 
-                        ? 'bg-gray-50/50 dark:bg-gray-800/30 border-transparent' 
+                    className={`flex items-center justify-between gap-3 p-4 rounded-2xl border transition-all duration-300 group ${note.completed
+                        ? 'bg-gray-50/50 dark:bg-gray-800/30 border-transparent'
                         : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md'
-                    }`}
+                      }`}
                   >
-                    <button 
+                    <button
                       onClick={() => toggleComplete(note.id)}
                       className="flex-shrink-0 focus:outline-none"
                     >
@@ -345,13 +341,12 @@ const NotesQuickAddTile = () => {
                         <Circle size={24} className="text-gray-300 dark:text-gray-600 hover:text-blue-400 dark:hover:text-[#B6F500] transition-colors" />
                       )}
                     </button>
-                    
+
                     <div className="flex-1 flex flex-col min-w-0">
-                      <p className={`text-base break-words transition-all duration-300 ${
-                        note.completed 
-                          ? 'text-gray-400 dark:text-gray-500 line-through' 
+                      <p className={`text-base break-words transition-all duration-300 ${note.completed
+                          ? 'text-gray-400 dark:text-gray-500 line-through'
                           : 'text-gray-700 dark:text-gray-200 font-medium'
-                      }`}>
+                        }`}>
                         {note.content}
                       </p>
                       {note.time && (
@@ -361,7 +356,7 @@ const NotesQuickAddTile = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <button
                       onClick={() => deleteNote(note.id)}
                       className="p-2 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all flex-shrink-0"
