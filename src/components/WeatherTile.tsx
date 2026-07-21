@@ -10,7 +10,7 @@ const WeatherTile = () => {
   const [isSearching, setIsSearching] = useState(false);
 
   // ─── Live weather data from Open-Meteo API ─────────────────────────
-  const { city, tempC, condition, humidity, wind, isDay, loading, error, selectCity, searchCity, resetToLocation } = useWeather();
+  const { city, tempC, condition, humidity, wind, isDay, loading, selectCity, searchCity, resetToLocation } = useWeather();
 
   const tempF = Math.round((tempC * 9) / 5 + 32);
   const displayTemp = isCelsius ? tempC : tempF;
@@ -111,12 +111,7 @@ const WeatherTile = () => {
           </div>
         )}
 
-        {/* ─── Error Banner (subtle, non-blocking) ─────────────────── */}
-        {error && !loading && !isSearchOpen && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full text-[10px] font-medium bg-red-500/20 text-red-600 dark:text-red-300 backdrop-blur-sm">
-            Offline — showing last data
-          </div>
-        )}
+
 
         {/* City Search Overlay */}
         {isSearchOpen ? (

@@ -36,10 +36,10 @@ const mapWeatherCode = (code: number, isDay: boolean): string => {
   return isDay ? 'Sunny' : 'Clear';
 };
 
-// ─── Default fallback coordinates (San Francisco) ────────────────────
-const DEFAULT_LAT = 37.7749;
-const DEFAULT_LON = -122.4194;
-const DEFAULT_CITY = 'San Francisco';
+// ─── Default fallback coordinates (Lahore) ────────────────────────────
+const DEFAULT_LAT = 31.5204;
+const DEFAULT_LON = 74.3587;
+const DEFAULT_CITY = 'Lahore';
 
 const STORAGE_KEY = 'lsc_dashboard_weather_loc';
 
@@ -138,10 +138,10 @@ const useWeather = (): WeatherState => {
 
   const [state, setState] = useState<Omit<WeatherState, 'selectCity' | 'searchCity' | 'resetToLocation'>>({
     city: customLoc?.city || DEFAULT_CITY,
-    tempC: 18,
+    tempC: 28,
     condition: initialIsDay ? 'Sunny' : 'Clear',
-    humidity: '—',
-    wind: '—',
+    humidity: '64%',
+    wind: '12 km/h',
     isDay: initialIsDay,
     loading: true,
     error: null,

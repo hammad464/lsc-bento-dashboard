@@ -143,27 +143,27 @@ const NotesQuickAddTile = () => {
       </div>
 
       {/* Input area */}
-      <div className="flex gap-3 mb-3 relative">
+      <div className="flex items-center gap-2 mb-3">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="What needs to be done?"
-          className="flex-1 px-4 py-3 pr-36 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border-2 border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 focus:bg-white dark:focus:bg-gray-800 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all shadow-inner"
+          className="flex-1 min-w-0 px-4 py-2.5 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border-2 border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 focus:bg-white dark:focus:bg-gray-800 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm transition-all shadow-inner"
         />
         <input
           type="time"
           value={timeInput}
           onChange={(e) => setTimeInput(e.target.value)}
-          className="absolute right-12 top-2 bottom-2 w-22 px-2 text-xs rounded-xl bg-gray-100 dark:bg-gray-700/80 border border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 outline-none text-gray-700 dark:text-gray-200 cursor-pointer font-semibold transition-all"
+          className="w-20 px-2 py-2 text-xs rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 outline-none text-gray-700 dark:text-gray-200 cursor-pointer font-semibold transition-all shrink-0"
         />
         <button
           onClick={addNote}
-          className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-blue-500 hover:bg-blue-600 dark:bg-[#B6F500] dark:hover:bg-[#88d400] text-white dark:text-gray-900 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md shadow-blue-500/20 dark:shadow-[#B6F500]/20"
+          className="p-2.5 flex items-center justify-center bg-blue-500 hover:bg-blue-600 dark:bg-[#B6F500] dark:hover:bg-[#88d400] text-white dark:text-gray-900 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md shrink-0"
           aria-label="Add note"
         >
-          <Plus size={20} />
+          <Plus size={18} />
         </button>
       </div>
 
@@ -251,7 +251,7 @@ const NotesQuickAddTile = () => {
             {/* Input & Filters & Search Area */}
             <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col gap-4 shrink-0 bg-gray-50/50 dark:bg-gray-800/10">
               {/* Add Task Input */}
-              <div className="flex gap-3 relative">
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={modalInput}
@@ -263,20 +263,20 @@ const NotesQuickAddTile = () => {
                     }
                   }}
                   placeholder="Add a new task..."
-                  className="flex-1 px-4 py-3 pr-36 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border-2 border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 focus:bg-white dark:focus:bg-gray-800 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all shadow-inner"
+                  className="flex-1 min-w-0 px-4 py-2.5 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border-2 border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 focus:bg-white dark:focus:bg-gray-800 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm transition-all shadow-inner"
                 />
                 <input
                   type="time"
                   value={modalTimeInput}
                   onChange={(e) => setModalTimeInput(e.target.value)}
-                  className="absolute right-12 top-2 bottom-2 w-22 px-2 text-xs rounded-xl bg-gray-100 dark:bg-gray-700/80 border border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 outline-none text-gray-700 dark:text-gray-200 cursor-pointer font-semibold transition-all"
+                  className="w-20 px-2 py-2 text-xs rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 outline-none text-gray-700 dark:text-gray-200 cursor-pointer font-semibold transition-all shrink-0"
                 />
                 <button
                   onClick={addModalNote}
-                  className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-blue-500 hover:bg-blue-600 dark:bg-[#B6F500] dark:hover:bg-[#88d400] text-white dark:text-gray-900 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md shadow-blue-500/20 dark:shadow-[#B6F500]/20"
+                  className="p-2.5 flex items-center justify-center bg-blue-500 hover:bg-blue-600 dark:bg-[#B6F500] dark:hover:bg-[#88d400] text-white dark:text-gray-900 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md shrink-0"
                   aria-label="Add task"
                 >
-                  <Plus size={20} />
+                  <Plus size={18} />
                 </button>
               </div>
 
