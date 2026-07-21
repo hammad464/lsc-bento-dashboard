@@ -1,35 +1,25 @@
-import { useState, useEffect } from 'react';
-import { CloudRain, Sun, Cloud, Snowflake, Droplets, Wind } from 'lucide-react';
+import { useState } from 'react';
+import { CloudRain, Sun, Cloud, Snowflake, Droplets, Wind, CloudLightning, Loader2, Moon } from 'lucide-react';
+import useWeather from '../hooks/useWeather';
 
 const WeatherTile = () => {
   const [isCelsius, setIsCelsius] = useState(true);
-  const [isDay, setIsDay] = useState(true);
 
-  // Check time to set Day or Night
-  useEffect(() => {
-    const hour = new Date().getHours();
-    setIsDay(hour >= 6 && hour < 18);
-  }, []);
+  // ─── Live weather data from Open-Meteo API ─────────────────────────
+  const { city, tempC, condition, humidity, wind, isDay, loading, error } = useWeather();
 
-  const weatherData = {
-    city: 'San Francisco',
-    tempC: 18,
-    condition: 'Sunny', 
-    humidity: '64%',
-    wind: '12 km/h'
-  };
-
-  const tempF = Math.round((weatherData.tempC * 9) / 5 + 32);
-  const displayTemp = isCelsius ? weatherData.tempC : tempF;
-  //const unit = isCelsius ? '°C' : '°F';
+  const tempF = Math.round((tempC * 9) / 5 + 32);
+  const displayTemp = isCelsius ? tempC : tempF;
 
   const getWeatherIcon = (condition: string) => {
     switch (condition.toLowerCase()) {
       case 'sunny': return <Sun size={36} className="text-amber-500" />;
+      case 'clear': return <Moon size={36} className="text-blue-100" />;
       case 'rainy': return <CloudRain size={36} className="text-blue-500 dark:text-[#B6F500]" />;
       case 'cloudy': return <Cloud size={36} className="text-gray-400" />;
       case 'snowy': return <Snowflake size={36} className="text-blue-300 dark:text-[#B6F500]" />;
-      default: return <Sun size={36} className="text-amber-500" />;
+      case 'stormy': return <CloudLightning size={36} className="text-purple-500 dark:text-[#B6F500]" />;
+      default: return condition.toLowerCase() === 'clear' ? <Moon size={36} className="text-blue-100" /> : <Sun size={36} className="text-amber-500" />;
     }
   };
 
@@ -89,17 +79,37 @@ const WeatherTile = () => {
 
       {/* FRONT CONTENT (Relative Z-10 ensures it stays above the backgrounds) */}
       <div className="relative z-10 flex flex-row items-center justify-between h-full">
+
+        {/* ─── Loading Skeleton Overlay ─────────────────────────────── */}
+        {loading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[2rem] backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <Loader2 size={24} className={`animate-spin ${isDay ? 'text-slate-600' : 'text-slate-300'}`} />
+              <span className={`text-sm font-medium ${isDay ? 'text-slate-600' : 'text-slate-300'}`}>
+                Fetching weather…
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ─── Error Banner (subtle, non-blocking) ─────────────────── */}
+        {error && !loading && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full text-[10px] font-medium bg-red-500/20 text-red-600 dark:text-red-300 backdrop-blur-sm">
+            Offline — showing last data
+          </div>
+        )}
+
         <div className="flex flex-col items-start justify-between h-full">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-xl backdrop-blur-md ${isDay ? 'bg-white/50 text-gray-800' : 'bg-white/10 text-white'}`}>
-              {getWeatherIcon(weatherData.condition)}
+              {getWeatherIcon(condition)}
             </div>
             <div>
               <h3 className={`text-lg font-bold tracking-tight ${isDay ? 'text-slate-800' : 'text-white'}`}>
                 Weather
               </h3>
               <p className={`text-xs font-medium ${isDay ? 'text-slate-600' : 'text-slate-300'}`}>
-                {weatherData.city}
+                {city}
               </p>
             </div>
           </div>
@@ -131,7 +141,7 @@ const WeatherTile = () => {
             </span>
           </div>
           <p className={`font-semibold text-sm mt-1 ${isDay ? 'text-slate-700' : 'text-slate-200'}`}>
-            {weatherData.condition}
+            {condition}
           </p>
         </div>
 
@@ -139,11 +149,11 @@ const WeatherTile = () => {
         <div className="flex flex-col gap-3 pl-8 py-2 ml-auto z-10">
           <div className={`flex items-center space-x-3 px-3 py-2 rounded-xl backdrop-blur-md ${isDay ? 'bg-white/30 text-slate-700' : 'bg-black/20 text-slate-200'}`}>
             <Droplets size={16} className={isDay ? "text-blue-500" : "text-[#B6F500]"} />
-            <span className="text-xs font-semibold">{weatherData.humidity}</span>
+            <span className="text-xs font-semibold">{humidity}</span>
           </div>
           <div className={`flex items-center space-x-3 px-3 py-2 rounded-xl backdrop-blur-md ${isDay ? 'bg-white/30 text-slate-700' : 'bg-black/20 text-slate-200'}`}>
             <Wind size={16} className={isDay ? "text-slate-600" : "text-slate-300"} />
-            <span className="text-xs font-semibold">{weatherData.wind}</span>
+            <span className="text-xs font-semibold">{wind}</span>
           </div>
         </div>
       </div>
