@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Trash2, CheckCircle2, Circle, ArrowRight, X, Search } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, Circle, ArrowRight, X, Search, Clock } from 'lucide-react';
 
 interface Note {
   id: string;
   content: string;
   completed: boolean;
+  time?: string;
 }
 
 const NotesQuickAddTile = () => {
@@ -14,16 +15,20 @@ const NotesQuickAddTile = () => {
       id: '1',
       content: 'Review Q3 goals tomorrow',
       completed: false,
+      time: '10:00',
     },
     {
       id: '2',
       content: 'Finish dashboard project',
       completed: true,
+      time: '14:30',
     },
   ]);
   const [input, setInput] = useState('');
+  const [timeInput, setTimeInput] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalInput, setModalInput] = useState('');
+  const [modalTimeInput, setModalTimeInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
 
@@ -34,10 +39,12 @@ const NotesQuickAddTile = () => {
           id: Date.now().toString(),
           content: input,
           completed: false,
+          time: timeInput || undefined,
         },
         ...notes,
       ]);
       setInput('');
+      setTimeInput('');
     }
   };
 
@@ -48,10 +55,12 @@ const NotesQuickAddTile = () => {
           id: Date.now().toString(),
           content: modalInput,
           completed: false,
+          time: modalTimeInput || undefined,
         },
         ...notes,
       ]);
       setModalInput('');
+      setModalTimeInput('');
     }
   };
 
@@ -96,6 +105,16 @@ const NotesQuickAddTile = () => {
     };
   }, [isModalOpen]);
 
+  // Format 24h string (e.g. "14:30") to 12h string (e.g. "2:30 PM")
+  const formatTime = (timeStr?: string) => {
+    if (!timeStr) return '';
+    const [hoursStr, minutesStr] = timeStr.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutesStr} ${ampm}`;
+  };
+
   const filteredNotes = notes.filter((note) => {
     const matchesSearch = note.content.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
@@ -114,14 +133,13 @@ const NotesQuickAddTile = () => {
           </span>
         </div>
         
-        {/* Clickable "View all" link, matches QuickLinks format */}
-        <div 
+        {/* Clickable "View all" button, styled like the Celsius slider */}
+        <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer shrink-0 ml-auto"
+          className="px-4 py-1 text-xs font-bold rounded-full bg-blue-500 dark:bg-[#B6F500] text-white dark:text-gray-900 shadow-sm hover:bg-blue-600 dark:hover:bg-[#88d400] transition-all cursor-pointer shrink-0 ml-auto"
         >
-          <span className="text-xs font-normal">View all</span>
-          <ArrowRight size={14} />
-        </div>
+          View all
+        </button>
       </div>
 
       {/* Input area */}
@@ -132,7 +150,13 @@ const NotesQuickAddTile = () => {
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="What needs to be done?"
-          className="flex-1 px-4 py-3 pr-14 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border-2 border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 focus:bg-white dark:focus:bg-gray-800 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all shadow-inner"
+          className="flex-1 px-4 py-3 pr-36 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border-2 border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 focus:bg-white dark:focus:bg-gray-800 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all shadow-inner"
+        />
+        <input
+          type="time"
+          value={timeInput}
+          onChange={(e) => setTimeInput(e.target.value)}
+          className="absolute right-12 top-2 bottom-2 w-22 px-2 text-xs rounded-xl bg-gray-100 dark:bg-gray-700/80 border border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 outline-none text-gray-700 dark:text-gray-200 cursor-pointer font-semibold transition-all"
         />
         <button
           onClick={addNote}
@@ -166,13 +190,21 @@ const NotesQuickAddTile = () => {
                 )}
               </button>
               
-              <p className={`text-base flex-1 break-words transition-all duration-300 ${
-                note.completed 
-                  ? 'text-gray-400 dark:text-gray-500 line-through' 
-                  : 'text-gray-700 dark:text-gray-200 font-medium'
-              }`}>
-                {note.content}
-              </p>
+              <div className="flex-1 flex flex-col min-w-0">
+                <p className={`text-base break-words transition-all duration-300 ${
+                  note.completed 
+                    ? 'text-gray-400 dark:text-gray-500 line-through' 
+                    : 'text-gray-700 dark:text-gray-200 font-medium'
+                }`}>
+                  {note.content}
+                </p>
+                {note.time && (
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-blue-500 dark:text-[#B6F500] mt-1 tracking-wider uppercase bg-blue-50 dark:bg-[#B6F500]/10 px-2 py-0.5 rounded-full w-fit">
+                    <Clock size={10} />
+                    <span>{formatTime(note.time)}</span>
+                  </div>
+                )}
+              </div>
               
               <button
                 onClick={() => deleteNote(note.id)}
@@ -233,7 +265,13 @@ const NotesQuickAddTile = () => {
                     }
                   }}
                   placeholder="Add a new task..."
-                  className="flex-1 px-4 py-3 pr-14 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border-2 border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 focus:bg-white dark:focus:bg-gray-800 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all shadow-inner"
+                  className="flex-1 px-4 py-3 pr-36 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border-2 border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 focus:bg-white dark:focus:bg-gray-800 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all shadow-inner"
+                />
+                <input
+                  type="time"
+                  value={modalTimeInput}
+                  onChange={(e) => setModalTimeInput(e.target.value)}
+                  className="absolute right-12 top-2 bottom-2 w-22 px-2 text-xs rounded-xl bg-gray-100 dark:bg-gray-700/80 border border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 outline-none text-gray-700 dark:text-gray-200 cursor-pointer font-semibold transition-all"
                 />
                 <button
                   onClick={addModalNote}
@@ -308,13 +346,21 @@ const NotesQuickAddTile = () => {
                       )}
                     </button>
                     
-                    <p className={`text-base flex-1 break-words transition-all duration-300 ${
-                      note.completed 
-                        ? 'text-gray-400 dark:text-gray-500 line-through' 
-                        : 'text-gray-700 dark:text-gray-200 font-medium'
-                    }`}>
-                      {note.content}
-                    </p>
+                    <div className="flex-1 flex flex-col min-w-0">
+                      <p className={`text-base break-words transition-all duration-300 ${
+                        note.completed 
+                          ? 'text-gray-400 dark:text-gray-500 line-through' 
+                          : 'text-gray-700 dark:text-gray-200 font-medium'
+                      }`}>
+                        {note.content}
+                      </p>
+                      {note.time && (
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-blue-500 dark:text-[#B6F500] mt-1 tracking-wider uppercase bg-blue-50 dark:bg-[#B6F500]/10 px-2 py-0.5 rounded-full w-fit">
+                          <Clock size={10} />
+                          <span>{formatTime(note.time)}</span>
+                        </div>
+                      )}
+                    </div>
                     
                     <button
                       onClick={() => deleteNote(note.id)}
