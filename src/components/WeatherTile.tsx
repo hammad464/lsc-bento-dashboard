@@ -1,15 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CloudRain, Sun, Cloud, Snowflake, Droplets, Wind } from 'lucide-react';
 
 const WeatherTile = () => {
   const [isCelsius, setIsCelsius] = useState(true);
-  const [isDay, setIsDay] = useState(true);
-
-  // Check time to set Day or Night
-  useEffect(() => {
+  const [isDay] = useState(() => {
     const hour = new Date().getHours();
-    setIsDay(hour >= 6 && hour < 18);
-  }, []);
+    return hour >= 6 && hour < 18;
+  });
 
   const weatherData = {
     city: 'San Francisco',

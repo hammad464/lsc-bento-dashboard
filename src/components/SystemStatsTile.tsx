@@ -7,20 +7,32 @@ interface BatteryState {
   supported: boolean;
 }
 
+interface BatteryManager extends EventTarget {
+  level: number;
+  charging: boolean;
+}
+
+interface NavigatorWithBattery extends Navigator {
+  getBattery?: () => Promise<BatteryManager>;
+}
+
 const SystemStatsTile = () => {
-  const [battery, setBattery] = useState<BatteryState>({
-    level: 84, // Default fallback/mock value
-    charging: true,
-    supported: true,
+  const [battery, setBattery] = useState<BatteryState>(() => {
+    const isSupported = typeof window !== 'undefined' && typeof navigator !== 'undefined' && 'getBattery' in navigator;
+    return {
+      level: 84, // Default fallback/mock value
+      charging: true,
+      supported: isSupported,
+    };
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof navigator === 'undefined' || !('getBattery' in navigator)) {
-      setBattery(prev => ({ ...prev, supported: false }));
+    const nav = navigator as NavigatorWithBattery;
+    if (!nav.getBattery) {
       return;
     }
 
-    let batteryInstance: any = null;
+    let batteryInstance: BatteryManager | null = null;
 
     const handleBatteryChange = () => {
       if (batteryInstance) {
@@ -32,7 +44,7 @@ const SystemStatsTile = () => {
       }
     };
 
-    (navigator as any).getBattery().then((batt: any) => {
+    nav.getBattery().then((batt) => {
       batteryInstance = batt;
       handleBatteryChange();
 
@@ -54,12 +66,12 @@ const SystemStatsTile = () => {
   const isLow = battery.level <= 20 && !battery.charging;
   
   // Theme color styles
-  let themeColorClass = 'text-green-500';
-  let bgColorClass = 'bg-green-50 dark:bg-green-900/20';
-  let glowColorClass = 'bg-green-500/10 group-hover:bg-green-500/20';
-  let statusText = 'Charging optimally';
-  let statusColorClass = 'text-green-500';
-  let activityLabel = 'Good';
+  let themeColorClass: string;
+  let bgColorClass: string;
+  let glowColorClass: string;
+  let statusText: string;
+  let statusColorClass: string;
+  let activityLabel: string;
 
   if (battery.charging) {
     themeColorClass = 'text-green-500';
