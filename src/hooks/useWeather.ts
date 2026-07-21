@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 
 // ─── Types ───────────────────────────────────────────────────────────
+export interface CitySearchResult {
+  name: string;
+  country: string;
+  lat: number;
+  lon: number;
+}
+
 export interface WeatherState {
   city: string;
   tempC: number;
@@ -10,21 +17,23 @@ export interface WeatherState {
   isDay: boolean;
   loading: boolean;
   error: string | null;
+  selectCity: (cityName: string, lat: number, lon: number) => void;
+  searchCity: (query: string) => Promise<CitySearchResult[]>;
+  resetToLocation: () => void;
 }
 
 // ─── WMO Weather Code → Human Condition ──────────────────────────────
-// Full spec: https://www.noaa.gov/weather/wmo-code-tables
 const mapWeatherCode = (code: number, isDay: boolean): string => {
-  if (code <= 1) return isDay ? 'Sunny' : 'Clear';           // Clear sky, mainly clear
-  if (code <= 3) return 'Cloudy';          // Partly cloudy, overcast
-  if (code <= 48) return 'Cloudy';         // Fog / depositing rime fog
-  if (code <= 57) return 'Rainy';          // Drizzle (light → dense)
-  if (code <= 67) return 'Rainy';          // Rain / freezing rain
-  if (code <= 77) return 'Snowy';          // Snow fall (slight → heavy)
-  if (code <= 82) return 'Rainy';          // Rain showers
-  if (code <= 86) return 'Snowy';          // Snow showers
-  if (code <= 99) return 'Stormy';         // Thunderstorm
-  return isDay ? 'Sunny' : 'Clear';                          // Fallback
+  if (code <= 1) return isDay ? 'Sunny' : 'Clear';
+  if (code <= 3) return 'Cloudy';
+  if (code <= 48) return 'Cloudy';
+  if (code <= 57) return 'Rainy';
+  if (code <= 67) return 'Rainy';
+  if (code <= 77) return 'Snowy';
+  if (code <= 82) return 'Rainy';
+  if (code <= 86) return 'Snowy';
+  if (code <= 99) return 'Stormy';
+  return isDay ? 'Sunny' : 'Clear';
 };
 
 // ─── Default fallback coordinates (San Francisco) ────────────────────
@@ -32,26 +41,24 @@ const DEFAULT_LAT = 37.7749;
 const DEFAULT_LON = -122.4194;
 const DEFAULT_CITY = 'San Francisco';
 
+const STORAGE_KEY = 'lsc_dashboard_weather_loc';
+
 // ─── Refresh interval (15 minutes) ──────────────────────────────────
 const REFRESH_MS = 15 * 60 * 1000;
 
-// ─── Reverse-geocode lat/lon → city name via Open-Meteo ─────────────
+// ─── Reverse-geocode lat/lon → city name via BigDataCloud API ─────────
 const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
   try {
-    // Open-Meteo doesn't have a reverse geocoder, so we use a forward search
-    // with a small bounding box trick. Instead, we'll use the Nominatim API
-    // which is free and doesn't require a key.
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10`
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
     );
     if (!res.ok) return DEFAULT_CITY;
     const data = await res.json();
-    // Try city → town → village → county as fallback chain
     return (
-      data.address?.city ||
-      data.address?.town ||
-      data.address?.village ||
-      data.address?.county ||
+      data.city ||
+      data.locality ||
+      data.principalSubdivision ||
+      data.countryName ||
       DEFAULT_CITY
     );
   } catch {
@@ -59,11 +66,42 @@ const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
   }
 };
 
-// ─── Get user's coordinates via browser geolocation ──────────────────
-const getUserCoords = (): Promise<{ lat: number; lon: number }> => {
+// ─── Get user's coordinates via Browser Geolocation / IP Geolocation Fallback ──
+const getUserCoords = (): Promise<{ lat: number; lon: number; city?: string }> => {
   return new Promise((resolve) => {
+    // Check localStorage first
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.lat && parsed.lon && parsed.city) {
+          resolve(parsed);
+          return;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    const fetchIpLocation = () => {
+      fetch('https://api.bigdatacloud.net/data/reverse-geocode-client')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.latitude && data.longitude) {
+            resolve({
+              lat: data.latitude,
+              lon: data.longitude,
+              city: data.city || data.locality || data.principalSubdivision || DEFAULT_CITY,
+            });
+          } else {
+            resolve({ lat: DEFAULT_LAT, lon: DEFAULT_LON, city: DEFAULT_CITY });
+          }
+        })
+        .catch(() => resolve({ lat: DEFAULT_LAT, lon: DEFAULT_LON, city: DEFAULT_CITY }));
+    };
+
     if (!navigator.geolocation) {
-      resolve({ lat: DEFAULT_LAT, lon: DEFAULT_LON });
+      fetchIpLocation();
       return;
     }
 
@@ -75,10 +113,9 @@ const getUserCoords = (): Promise<{ lat: number; lon: number }> => {
         });
       },
       () => {
-        // User denied or error → fall back to default
-        resolve({ lat: DEFAULT_LAT, lon: DEFAULT_LON });
+        fetchIpLocation();
       },
-      { timeout: 8000, maximumAge: 300000 } // 8s timeout, cache for 5 min
+      { timeout: 5000, maximumAge: 300000 }
     );
   });
 };
@@ -87,8 +124,20 @@ const getUserCoords = (): Promise<{ lat: number; lon: number }> => {
 const useWeather = (): WeatherState => {
   const initialIsDay = new Date().getHours() >= 6 && new Date().getHours() < 18;
 
-  const [state, setState] = useState<WeatherState>({
-    city: DEFAULT_CITY,
+  const [customLoc, setCustomLoc] = useState<{ lat: number; lon: number; city: string } | null>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const [state, setState] = useState<Omit<WeatherState, 'selectCity' | 'searchCity' | 'resetToLocation'>>({
+    city: customLoc?.city || DEFAULT_CITY,
     tempC: 18,
     condition: initialIsDay ? 'Sunny' : 'Clear',
     humidity: '—',
@@ -98,12 +147,9 @@ const useWeather = (): WeatherState => {
     error: null,
   });
 
-  const fetchWeather = useCallback(async () => {
+  const fetchWeatherData = useCallback(async (lat: number, lon: number, cityName?: string) => {
+    setState((prev) => ({ ...prev, loading: true }));
     try {
-      // 1. Get coordinates
-      const { lat, lon } = await getUserCoords();
-
-      // 2. Fetch weather from Open-Meteo
       const weatherRes = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
         `&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day`
@@ -116,14 +162,11 @@ const useWeather = (): WeatherState => {
       const weatherData = await weatherRes.json();
       const current = weatherData.current;
 
-      // 3. Reverse-geocode to city name
-      const city = await reverseGeocode(lat, lon);
-
+      const finalCity = cityName || (await reverseGeocode(lat, lon));
       const isDayAPI = current.is_day === 1;
 
-      // 4. Map API data → our state shape
       setState({
-        city,
+        city: finalCity,
         tempC: Math.round(current.temperature_2m),
         condition: mapWeatherCode(current.weather_code, isDayAPI),
         humidity: `${current.relative_humidity_2m}%`,
@@ -141,16 +184,62 @@ const useWeather = (): WeatherState => {
     }
   }, []);
 
-  useEffect(() => {
-    // Fetch immediately on mount
-    fetchWeather();
+  const fetchWeather = useCallback(async () => {
+    if (customLoc) {
+      fetchWeatherData(customLoc.lat, customLoc.lon, customLoc.city);
+    } else {
+      const location = await getUserCoords();
+      fetchWeatherData(location.lat, location.lon, location.city);
+    }
+  }, [customLoc, fetchWeatherData]);
 
-    // Auto-refresh every 15 minutes
+  const selectCity = useCallback((cityName: string, lat: number, lon: number) => {
+    const locData = { city: cityName, lat, lon };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(locData));
+    setCustomLoc(locData);
+    fetchWeatherData(lat, lon, cityName);
+  }, [fetchWeatherData]);
+
+  const resetToLocation = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    setCustomLoc(null);
+    getUserCoords().then((location) => {
+      fetchWeatherData(location.lat, location.lon, location.city);
+    });
+  }, [fetchWeatherData]);
+
+  const searchCity = useCallback(async (query: string): Promise<CitySearchResult[]> => {
+    if (!query.trim()) return [];
+    try {
+      const res = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query.trim())}&count=5&language=en`
+      );
+      if (!res.ok) return [];
+      const data = await res.json();
+      if (!data.results) return [];
+      return data.results.map((item: { name: string; country?: string; latitude: number; longitude: number }) => ({
+        name: item.name,
+        country: item.country || '',
+        lat: item.latitude,
+        lon: item.longitude,
+      }));
+    } catch {
+      return [];
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchWeather();
     const interval = setInterval(fetchWeather, REFRESH_MS);
     return () => clearInterval(interval);
   }, [fetchWeather]);
 
-  return state;
+  return {
+    ...state,
+    selectCity,
+    searchCity,
+    resetToLocation,
+  };
 };
 
 export default useWeather;
