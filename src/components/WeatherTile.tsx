@@ -1,15 +1,34 @@
-import { useState } from 'react';
-import { CloudRain, Sun, Cloud, Snowflake, Droplets, Wind, CloudLightning, Loader2, Moon } from 'lucide-react';
-import useWeather from '../hooks/useWeather';
+import { useState, useEffect } from 'react';
+import { CloudRain, Sun, Cloud, Snowflake, Droplets, Wind, CloudLightning, Loader2, Moon, Search, MapPin, RotateCcw, X } from 'lucide-react';
+import useWeather, { type CitySearchResult } from '../hooks/useWeather';
 
 const WeatherTile = () => {
   const [isCelsius, setIsCelsius] = useState(true);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<CitySearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // ─── Live weather data from Open-Meteo API ─────────────────────────
-  const { city, tempC, condition, humidity, wind, isDay, loading, error } = useWeather();
+  const { city, tempC, condition, humidity, wind, isDay, loading, error, selectCity, searchCity, resetToLocation } = useWeather();
 
   const tempF = Math.round((tempC * 9) / 5 + 32);
   const displayTemp = isCelsius ? tempC : tempF;
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      const results = await searchCity(searchQuery);
+      setSearchResults(results);
+      setIsSearching(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchCity]);
 
   const getWeatherIcon = (condition: string) => {
     switch (condition.toLowerCase()) {
@@ -77,11 +96,11 @@ const WeatherTile = () => {
       {/* ========================================= */}
 
 
-      {/* FRONT CONTENT (Relative Z-10 ensures it stays above the backgrounds) */}
+      {/* FRONT CONTENT */}
       <div className="relative z-10 flex flex-row items-center justify-between h-full">
 
         {/* ─── Loading Skeleton Overlay ─────────────────────────────── */}
-        {loading && (
+        {loading && !isSearchOpen && (
           <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[2rem] backdrop-blur-sm">
             <div className="flex items-center gap-3">
               <Loader2 size={24} className={`animate-spin ${isDay ? 'text-slate-600' : 'text-slate-300'}`} />
@@ -93,11 +112,74 @@ const WeatherTile = () => {
         )}
 
         {/* ─── Error Banner (subtle, non-blocking) ─────────────────── */}
-        {error && !loading && (
+        {error && !loading && !isSearchOpen && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full text-[10px] font-medium bg-red-500/20 text-red-600 dark:text-red-300 backdrop-blur-sm">
             Offline — showing last data
           </div>
         )}
+
+        {/* City Search Overlay */}
+        {isSearchOpen ? (
+          <div className="absolute inset-0 z-30 flex flex-col p-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-[2rem] transition-all">
+            <div className="flex items-center gap-2 mb-2">
+              <Search size={16} className="text-slate-400 shrink-0 ml-2" />
+              <input
+                type="text"
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search city (e.g. Lahore, London, New York)..."
+                className="flex-1 bg-transparent text-sm font-semibold outline-none text-slate-800 dark:text-white placeholder-slate-400"
+              />
+              <button
+                onClick={() => {
+                  resetToLocation();
+                  setIsSearchOpen(false);
+                }}
+                title="Auto-detect Location"
+                className="p-1.5 text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-[#B6F500] rounded-lg transition-colors"
+              >
+                <RotateCcw size={16} />
+              </button>
+              <button
+                onClick={() => setIsSearchOpen(false)}
+                className="p-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-1">
+              {isSearching ? (
+                <div className="flex items-center justify-center py-3 text-xs text-slate-400 gap-2">
+                  <Loader2 size={14} className="animate-spin" /> Searching...
+                </div>
+              ) : searchResults.length > 0 ? (
+                searchResults.map((res, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      selectCity(res.name, res.lat, res.lon);
+                      setIsSearchOpen(false);
+                      setSearchQuery('');
+                    }}
+                    className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold rounded-xl text-left hover:bg-blue-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <MapPin size={12} className="text-blue-500 dark:text-[#B6F500]" />
+                      {res.name}
+                    </span>
+                    <span className="text-[10px] text-slate-400">{res.country}</span>
+                  </button>
+                ))
+              ) : searchQuery.trim() ? (
+                <div className="text-center py-3 text-xs text-slate-400">No cities found</div>
+              ) : (
+                <div className="text-center py-2 text-xs text-slate-400">Type a city name above</div>
+              )}
+            </div>
+          </div>
+        ) : null}
 
         <div className="flex flex-col items-start justify-between h-full">
           <div className="flex items-center gap-3">
@@ -108,9 +190,14 @@ const WeatherTile = () => {
               <h3 className={`text-lg font-bold tracking-tight ${isDay ? 'text-slate-800' : 'text-white'}`}>
                 Weather
               </h3>
-              <p className={`text-xs font-medium ${isDay ? 'text-slate-600' : 'text-slate-300'}`}>
-                {city}
-              </p>
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className={`text-xs font-semibold ${isDay ? 'text-slate-700 hover:text-blue-600' : 'text-slate-200 hover:text-[#B6F500]'} transition-colors flex items-center gap-1 group/btn cursor-pointer`}
+                title="Click to search city"
+              >
+                <span>{city}</span>
+                <Search size={11} className="opacity-60 group-hover/btn:opacity-100 transition-opacity" />
+              </button>
             </div>
           </div>
           

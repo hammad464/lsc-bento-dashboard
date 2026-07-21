@@ -1,14 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
 const ThemeToggleTile = () => {
-  const [isDark, setIsDark] = useState(false);
-
-  // Load theme on mount
-  useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    setIsDark(isDark);
-  }, []);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return false;
+  });
 
   // Toggle theme
   const toggleTheme = () => {
