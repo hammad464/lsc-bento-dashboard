@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Plus, Trash2, CheckCircle2, Circle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Plus, Trash2, CheckCircle2, Circle, ArrowRight, X, Search } from 'lucide-react';
 
 interface Note {
   id: string;
@@ -21,6 +22,10 @@ const NotesQuickAddTile = () => {
     },
   ]);
   const [input, setInput] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalInput, setModalInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
 
   const addNote = () => {
     if (input.trim()) {
@@ -33,6 +38,20 @@ const NotesQuickAddTile = () => {
         ...notes,
       ]);
       setInput('');
+    }
+  };
+
+  const addModalNote = () => {
+    if (modalInput.trim()) {
+      setNotes([
+        {
+          id: Date.now().toString(),
+          content: modalInput,
+          completed: false,
+        },
+        ...notes,
+      ]);
+      setModalInput('');
     }
   };
 
@@ -53,13 +72,56 @@ const NotesQuickAddTile = () => {
     }
   };
 
+  // Close modal on escape key
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isModalOpen]);
+
+  // Disable body scroll when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isModalOpen]);
+
+  const filteredNotes = notes.filter((note) => {
+    const matchesSearch = note.content.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    if (filter === 'active') return !note.completed;
+    if (filter === 'completed') return note.completed;
+    return true;
+  });
+
   return (
     <div className="md:col-span-3 row-span-1 h-[220px] rounded-[2rem] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 flex flex-col shadow-sm hover:shadow-lg transition-all duration-300">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Tasks</h3>
-        <span className="px-3 py-1 bg-blue-100 dark:bg-[#B6F500]/20 text-blue-600 dark:text-[#B6F500] text-sm font-bold rounded-full">
-          {notes.filter(n => !n.completed).length} pending
-        </span>
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Tasks</h3>
+          <span className="px-3 py-1 bg-blue-100 dark:bg-[#B6F500]/20 text-blue-600 dark:text-[#B6F500] text-sm font-bold rounded-full">
+            {notes.filter(n => !n.completed).length} pending
+          </span>
+        </div>
+        
+        {/* Clickable "View all" link, matches QuickLinks format */}
+        <div 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer shrink-0 ml-auto"
+        >
+          <span className="text-xs font-normal">View all</span>
+          <ArrowRight size={14} />
+        </div>
       </div>
 
       {/* Input area */}
@@ -128,6 +190,152 @@ const NotesQuickAddTile = () => {
           </div>
         )}
       </div>
+
+      {/* Modal/Pop-up displaying all tasks */}
+      {isModalOpen && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div 
+            className="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-h-[85vh] overflow-hidden animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800 shrink-0">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">All Tasks</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {notes.filter(n => !n.completed).length} pending • {notes.filter(n => n.completed).length} completed
+                </p>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                aria-label="Close modal"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Input & Filters & Search Area */}
+            <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col gap-4 shrink-0 bg-gray-50/50 dark:bg-gray-800/10">
+              {/* Add Task Input */}
+              <div className="flex gap-3 relative">
+                <input
+                  type="text"
+                  value={modalInput}
+                  onChange={(e) => setModalInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      addModalNote();
+                    }
+                  }}
+                  placeholder="Add a new task..."
+                  className="flex-1 px-4 py-3 pr-14 rounded-2xl bg-gray-50 dark:bg-gray-800/80 border-2 border-transparent focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 focus:bg-white dark:focus:bg-gray-800 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all shadow-inner"
+                />
+                <button
+                  onClick={addModalNote}
+                  className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-blue-500 hover:bg-blue-600 dark:bg-[#B6F500] dark:hover:bg-[#88d400] text-white dark:text-gray-900 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md shadow-blue-500/20 dark:shadow-[#B6F500]/20"
+                  aria-label="Add task"
+                >
+                  <Plus size={20} />
+                </button>
+              </div>
+
+              {/* Filters & Search */}
+              <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+                {/* Search */}
+                <div className="relative w-full sm:w-64">
+                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search tasks..."
+                    className="w-full pl-10 pr-4 py-2 text-sm rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-blue-500/30 dark:focus:border-[#B6F500]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filters */}
+                <div className="flex gap-2 w-full sm:w-auto">
+                  {(['all', 'active', 'completed'] as const).map((filterType) => (
+                    <button
+                      key={filterType}
+                      onClick={() => setFilter(filterType)}
+                      className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-bold rounded-xl capitalize transition-all ${
+                        filter === filterType
+                          ? 'bg-blue-500 text-white dark:bg-[#B6F500] dark:text-gray-900 shadow-md shadow-blue-500/10 dark:shadow-[#B6F500]/10'
+                          : 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700/80 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
+                      {filterType}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Scrollable list */}
+            <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-3 custom-scrollbar">
+              {filteredNotes.length > 0 ? (
+                filteredNotes.map((note) => (
+                  <div
+                    key={note.id}
+                    className={`flex items-center justify-between gap-3 p-4 rounded-2xl border transition-all duration-300 group ${
+                      note.completed 
+                        ? 'bg-gray-50/50 dark:bg-gray-800/30 border-transparent' 
+                        : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md'
+                    }`}
+                  >
+                    <button 
+                      onClick={() => toggleComplete(note.id)}
+                      className="flex-shrink-0 focus:outline-none"
+                    >
+                      {note.completed ? (
+                        <CheckCircle2 size={24} className="text-green-500" />
+                      ) : (
+                        <Circle size={24} className="text-gray-300 dark:text-gray-600 hover:text-blue-400 dark:hover:text-[#B6F500] transition-colors" />
+                      )}
+                    </button>
+                    
+                    <p className={`text-base flex-1 break-words transition-all duration-300 ${
+                      note.completed 
+                        ? 'text-gray-400 dark:text-gray-500 line-through' 
+                        : 'text-gray-700 dark:text-gray-200 font-medium'
+                    }`}>
+                      {note.content}
+                    </p>
+                    
+                    <button
+                      onClick={() => deleteNote(note.id)}
+                      className="p-2 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all flex-shrink-0"
+                      aria-label="Delete task"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500">
+                  <CheckCircle2 size={48} className="mb-4 opacity-20" />
+                  <p className="font-medium">No tasks found</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
