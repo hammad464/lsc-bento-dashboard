@@ -1,5 +1,5 @@
 import { User, Sparkles, Pencil, Check } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const getGreeting = () => {
   const hour = new Date().getHours();
