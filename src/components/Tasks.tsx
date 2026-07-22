@@ -10,20 +10,33 @@ interface Note {
 }
 
 const NotesQuickAddTile = () => {
-  const [notes, setNotes] = useState<Note[]>([
-    {
-      id: '1',
-      content: 'Review Q3 goals tomorrow',
-      completed: false,
-      time: '10:00',
-    },
-    {
-      id: '2',
-      content: 'Finish dashboard project',
-      completed: true,
-      time: '14:30',
-    },
-  ]);
+  const [notes, setNotes] = useState<Note[]>(() => {
+    try {
+      const saved = localStorage.getItem('bento-dashboard-tasks');
+      return saved !== null ? JSON.parse(saved) : [
+        {
+          id: '1',
+          content: 'Review Q3 goals tomorrow',
+          completed: false,
+          time: '10:00',
+        },
+        {
+          id: '2',
+          content: 'Finish dashboard project',
+          completed: true,
+          time: '14:30',
+        },
+      ];
+    } catch (e) {
+      console.error('Failed to parse tasks from localStorage', e);
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bento-dashboard-tasks', JSON.stringify(notes));
+  }, [notes]);
+
   const [input, setInput] = useState('');
   const [timeInput, setTimeInput] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);

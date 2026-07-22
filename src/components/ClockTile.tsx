@@ -2,7 +2,19 @@ import { useEffect, useState } from 'react';
 
 const ClockTile = () => {
   const [time, setTime] = useState<Date>(new Date());
-  const [is24Hour, setIs24Hour] = useState(true);
+  const [is24Hour, setIs24Hour] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('bento-clock-format');
+      return saved !== null ? JSON.parse(saved) : true;
+    } catch (e) {
+      console.error('Failed to parse clock format from localStorage', e);
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bento-clock-format', JSON.stringify(is24Hour));
+  }, [is24Hour]);
 
   useEffect(() => {
     const interval = setInterval(() => {
