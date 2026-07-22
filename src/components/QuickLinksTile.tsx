@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowRight, Link2, Plus, Trash2, X, Search, Globe } from 'lucide-react';
 import { SiGithub, SiGoogle, SiBlack, SiStackoverflow } from 'react-icons/si';
@@ -77,8 +77,14 @@ const QuickLinksTile = () => {
   const [newDesc, setNewDesc] = useState('');
   const [newUrl, setNewUrl] = useState('');
 
+  const isMounted = useRef(false);
+
   useEffect(() => {
-    localStorage.setItem('bento-dashboard-quicklinks', JSON.stringify(links));
+    if (isMounted.current) {
+      localStorage.setItem('bento-dashboard-quicklinks', JSON.stringify(links));
+    } else {
+      isMounted.current = true;
+    }
   }, [links]);
 
   // Handle body scroll when modal is open

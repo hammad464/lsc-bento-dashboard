@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 const ClockTile = () => {
   const [time, setTime] = useState<Date>(new Date());
@@ -12,8 +12,14 @@ const ClockTile = () => {
     }
   });
 
+  const isMounted = useRef(false);
+
   useEffect(() => {
-    localStorage.setItem('bento-clock-format', JSON.stringify(is24Hour));
+    if (isMounted.current) {
+      localStorage.setItem('bento-clock-format', JSON.stringify(is24Hour));
+    } else {
+      isMounted.current = true;
+    }
   }, [is24Hour]);
 
   useEffect(() => {

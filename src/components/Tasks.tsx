@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus, Trash2, CheckCircle2, Circle, X, Search, Clock } from 'lucide-react';
 
@@ -33,8 +33,14 @@ const NotesQuickAddTile = () => {
     }
   });
 
+  const isMounted = useRef(false);
+
   useEffect(() => {
-    localStorage.setItem('bento-dashboard-tasks', JSON.stringify(notes));
+    if (isMounted.current) {
+      localStorage.setItem('bento-dashboard-tasks', JSON.stringify(notes));
+    } else {
+      isMounted.current = true;
+    }
   }, [notes]);
 
   const [input, setInput] = useState('');
