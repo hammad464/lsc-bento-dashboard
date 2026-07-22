@@ -1,6 +1,16 @@
 import { User, Sparkles } from 'lucide-react';
 
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return 'Good Morning!';
+  if (hour >= 12 && hour < 17) return 'Good Afternoon!';
+  if (hour >= 17 && hour < 22) return 'Good Evening!';
+  return 'Good Night!';
+};
+
 const ProfileTile = () => {
+  const greeting = getGreeting();
+
   return (
     <div className="md:col-span-3 row-span-1 p-8 rounded-[2rem] bg-blue-600 dark:bg-[#B6F500] text-white shadow-lg relative overflow-hidden group hover:shadow-xl transition-all duration-300 border border-white/10">
       {/* Decorative background elements */}
@@ -13,7 +23,7 @@ const ProfileTile = () => {
               <User size={36} className="text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-extrabold tracking-tight">Good Morning!</h2>
+              <h2 className="text-3xl font-extrabold tracking-tight">{greeting}</h2>
             </div>
           </div>
           <div className="flex items-center space-x-2 text-indigo-50 bg-black/20 w-fit px-5 py-3 rounded-full backdrop-blur-sm border border-white/10 shadow-sm">
