@@ -65,64 +65,64 @@ const SystemStatsTile = () => {
   // Determine colors/status based on level and charging state
   const isLow = battery.level <= 20 && !battery.charging;
   
-  // Theme color styles
-  let themeColorClass: string;
-  let bgColorClass: string;
-  let glowColorClass: string;
-  let statusText: string;
-  let statusColorClass: string;
-  let activityLabel: string;
-
-  if (battery.charging) {
-    themeColorClass = 'text-green-500';
-    bgColorClass = 'bg-green-50 dark:bg-green-900/20';
-    glowColorClass = 'bg-green-500/10 group-hover:bg-green-500/20';
-    statusText = 'Charging optimally';
-    statusColorClass = 'text-green-500';
-    activityLabel = 'Charging';
-  } else if (isLow) {
-    themeColorClass = 'text-red-500 animate-pulse';
-    bgColorClass = 'bg-red-50 dark:bg-red-900/20';
-    glowColorClass = 'bg-red-500/10 group-hover:bg-red-500/20';
-    statusText = 'Battery low - plug in!';
-    statusColorClass = 'text-red-500 font-bold';
-    activityLabel = 'Critical';
-  } else {
-    // Discharging/On Battery
-    themeColorClass = 'text-blue-500';
-    bgColorClass = 'bg-blue-50 dark:bg-blue-900/20';
-    glowColorClass = 'bg-blue-500/10 group-hover:bg-blue-500/20';
-    statusText = 'Running on battery';
-    statusColorClass = 'text-blue-500 dark:text-blue-400';
-    activityLabel = 'On Battery';
-  }
+  // Theme color styles config object
+  const statsConfig = (() => {
+    if (battery.charging) {
+      return {
+        themeColorClass: 'text-green-500',
+        bgColorClass: 'bg-green-50 dark:bg-green-900/20',
+        glowColorClass: 'bg-green-500/10 group-hover:bg-green-500/20',
+        statusText: 'Charging optimally',
+        statusColorClass: 'text-green-500',
+        activityLabel: 'Charging',
+      };
+    }
+    if (isLow) {
+      return {
+        themeColorClass: 'text-red-500 animate-pulse',
+        bgColorClass: 'bg-red-50 dark:bg-red-900/20',
+        glowColorClass: 'bg-red-500/10 group-hover:bg-red-500/20',
+        statusText: 'Battery low - plug in!',
+        statusColorClass: 'text-red-500 font-bold',
+        activityLabel: 'Critical',
+      };
+    }
+    return {
+      themeColorClass: 'text-blue-500',
+      bgColorClass: 'bg-blue-50 dark:bg-blue-900/20',
+      glowColorClass: 'bg-blue-500/10 group-hover:bg-blue-500/20',
+      statusText: 'Running on battery',
+      statusColorClass: 'text-blue-500 dark:text-blue-400',
+      activityLabel: 'On Battery',
+    };
+  })();
 
   // If not supported, we can append a "(Demo)" text or similar
-  const displayStatus = battery.supported ? statusText : `${statusText} (Demo)`;
+  const displayStatus = battery.supported ? statsConfig.statusText : `${statsConfig.statusText} (Demo)`;
 
   // Choose the right icon
   const renderIcon = () => {
     if (battery.charging) {
-      return <BatteryCharging size={20} className={themeColorClass} />;
+      return <BatteryCharging size={20} className={statsConfig.themeColorClass} />;
     }
     if (isLow) {
-      return <BatteryWarning size={20} className={themeColorClass} />;
+      return <BatteryWarning size={20} className={statsConfig.themeColorClass} />;
     }
-    return <Battery size={20} className={themeColorClass} />;
+    return <Battery size={20} className={statsConfig.themeColorClass} />;
   };
 
   return (
     <div className="md:col-span-1 row-span-1 h-[160px] rounded-[2rem] bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
       {/* Dynamic background glow */}
-      <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl transition-all duration-500 ${glowColorClass}`} />
+      <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl transition-all duration-500 ${statsConfig.glowColorClass}`} />
       
       <div className="flex items-center justify-between relative z-10">
-        <div className={`p-2 rounded-xl transition-colors duration-300 ${bgColorClass}`}>
+        <div className={`p-2 rounded-xl transition-colors duration-300 ${statsConfig.bgColorClass}`}>
           {renderIcon()}
         </div>
         <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 flex items-center gap-1 transition-all">
           <Activity size={12} className={isLow ? 'text-red-500 animate-pulse' : 'text-gray-400'} />
-          {activityLabel}
+          {statsConfig.activityLabel}
         </span>
       </div>
       
@@ -135,7 +135,7 @@ const SystemStatsTile = () => {
             %
           </span>
         </div>
-        <p className={`text-sm font-semibold mt-1 transition-colors duration-300 ${statusColorClass}`}>
+        <p className={`text-sm font-semibold mt-1 transition-colors duration-300 ${statsConfig.statusColorClass}`}>
           {displayStatus}
         </p>
       </div>
